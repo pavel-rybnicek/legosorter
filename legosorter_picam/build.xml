@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="legosorter_picam" default="makejar" basedir=".">
-  <target name ="makejar" description="Create a jar for the project">
-    <jar jarfile="legosorter_picam.jar" includes="*.class" basedir="bin"/>
-  </target>
+<project>
+
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+
+    <target name="compile">
+        <javac srcdir="src" destdir="bin"/>
+    </target>
+
+    <target name="jar">
+        <jar destfile="legosorter_picam.jar" basedir="bin">
+            <manifest>
+                <attribute name="Main-Class" value="pi.picam.PicamServer"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run">
+        <java jar="legosorter_picam.jar" fork="true"/>
+    </target>
+
 </project>
