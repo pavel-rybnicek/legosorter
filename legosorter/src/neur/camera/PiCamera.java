@@ -36,7 +36,7 @@ public class PiCamera implements ICamera
   @Override
   public void checkFps()
   {
-    // TODO Auto-generated method stub
+    // u raspberry kamery nemá smysl
     
   }
 
