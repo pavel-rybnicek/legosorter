@@ -16,7 +16,7 @@ public class CameraFactory
       return new WebcamCamera ();
      
     case RASPBERRY:
-      return null;
+      return new PiCamera();
     }
     
     return null;
