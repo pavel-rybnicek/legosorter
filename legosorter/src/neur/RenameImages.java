@@ -5,7 +5,7 @@ import java.io.IOException;
 
 public class RenameImages {
 
-	private final static String LEARN_ROOT = "C:/data/LEGO/legosorter/ColorsWhiteBackground/learn";
+	private final static String LEARN_ROOT = "C:/data/LEGO/legosorter/picam_colors/train";
 
 	public static void main(String[] args) throws IOException {
 	  

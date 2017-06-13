@@ -17,13 +17,13 @@ import neur.nxtpusher.PushQueue;
 
 public class CaptureAndSort
 {
-  private final static String OUTPUT_PATH = "C:/data/LEGO/legosorter/ColorsWhiteBackground/test";
+  private final static String OUTPUT_PATH = "C:/data/LEGO/legosorter/picam_colors/test";
 
   private final static String NET_PATH = "C:/data/LEGO/legosorter/neuroph/NeurophProject/Neural Networks";
 
-  final static String NET_FILE = "ColorsWhiteBackgroundSmes.nnet";
+  final static String NET_FILE = "picam_colors.nnet";
 
-  final static Cam cameraType = Cam.GENIUS;
+  final static Cam cameraType = Cam.RASPBERRY;
 
   private static boolean exit = false;
 

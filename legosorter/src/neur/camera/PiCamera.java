@@ -61,6 +61,11 @@ public class PiCamera implements ICamera
   @Override
   public BufferedImage cropImage(BufferedImage image)
   {
-    return image;
+    int width = image.getWidth();
+    int height = image.getHeight();
+
+    BufferedImage imageCropped = image.getSubimage(200, 130,
+       229, 229);
+    return imageCropped;
   }
 }
