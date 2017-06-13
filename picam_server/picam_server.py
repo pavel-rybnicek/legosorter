@@ -15,7 +15,7 @@ PORT = 8001 # Arbitrary non-privileged port
  
 camera = PiCamera(resolution=(640, 480), framerate=30)
 # Set ISO to the desired value
-camera.iso = 800
+camera.iso = 100
 # Wait for the automatic gain control to settle
 time.sleep(2)
 # Now fix the values
@@ -54,28 +54,24 @@ def clientthread(conn):
         #Receiving from client
         print '1 ',time.time()
         data = conn.recv(1024)
-        print '2 ',time.time()
         
         camera.capture(my_stream, 'jpeg', use_video_port = True)
-        print '3 ',time.time()
        
         filesocket = conn.makefile('wb') 
-        print '4 ',time.time()
+        
         delka = my_stream.tell()
-        print '5 ',time.time()
         filesocket.write(struct.pack('>l', delka))
         filesocket.flush()
-        print '6 ',time.time()
 
         # Rewind the stream and send the image data over the wire
         my_stream.seek(0)
         filesocket.write(my_stream.read())
         filesocket.flush()
-        print '7 ',time.time()
+        
         # Reset the stream for the next capture
         my_stream.seek(0)
         my_stream.truncate()
-        print '8 ',time.time()
+        
  
     #came out of loop
     conn.close()
