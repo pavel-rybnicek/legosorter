@@ -23,7 +23,7 @@ public class NxtDoublePusher implements IPusher
   private TouchSensor touchSensor = null;
   
     private final String PUSHER1 = "blue";
-    private final String PUSHER2 = "white";
+    private final String PUSHER2 = "wwhite";
     private final String PUSHER3 = "green";
     private final String PUSHER4 = "yellow";
     private final String PUSHER5 = "red";
@@ -113,17 +113,17 @@ public class NxtDoublePusher implements IPusher
     {
     case PUSHER1:
     case PUSHER2:
-      delay = 900;
+      delay = 700;
       break;
 
     case PUSHER3:
     case PUSHER4:
-      delay = 2000;
+      delay = 1600;
       break;
 
     case PUSHER5:
     case PUSHER6:
-      delay = 2800;
+      delay = 2600;
       break;
     }
 
