@@ -64,8 +64,8 @@ public class PiCamera implements ICamera
     int width = image.getWidth();
     int height = image.getHeight();
 
-    BufferedImage imageCropped = image.getSubimage(200, 130,
-       229, 229);
+    BufferedImage imageCropped = image.getSubimage(250, 180,
+       149, 149);
     return imageCropped;
   }
 }
