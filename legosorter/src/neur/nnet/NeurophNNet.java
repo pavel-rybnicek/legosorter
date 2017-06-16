@@ -50,7 +50,7 @@ public class NeurophNNet implements INNet
 
     int resultValueInt = (int) (resultValue * 100);
 
-    if (90 > resultValueInt)
+    if (30 > resultValueInt)
     {
       resultString = "unknown";
     }
