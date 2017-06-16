@@ -23,7 +23,7 @@ public class NxtDoublePusher implements IPusher
   private TouchSensor touchSensor = null;
   
     private final String PUSHER1 = "blue";
-    private final String PUSHER2 = "wwhite";
+    private final String PUSHER2 = "white";
     private final String PUSHER3 = "green";
     private final String PUSHER4 = "yellow";
     private final String PUSHER5 = "red";
