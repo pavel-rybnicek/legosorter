@@ -8,7 +8,9 @@ import neur.nxtpusher.PusherFactory.PusherType;
 
 public class PushQueue implements Runnable
 {
-  private int WINDOW_SIZE = 100;
+  private int WINDOW_SIZE = 50;
+  
+  private PusherType pusherType = PusherType.NXTDOUBLEPUSHER;
 
   private static ConcurrentSkipListSet<PushEvent> queue = new ConcurrentSkipListSet<PushEvent>();
   
@@ -59,7 +61,7 @@ public class PushQueue implements Runnable
   {
     try
     {
-      pusher = PusherFactory.getPusher(PusherType.NXTDOUBLEPUSHER);
+      pusher = PusherFactory.getPusher(pusherType);
       pusher.init();
 
       processQueue();
