@@ -24,6 +24,7 @@ camera.exposure_mode = 'off'
 g = camera.awb_gains
 camera.awb_mode = 'auto'
 camera.awb_gains = g
+camera.brightness = 55
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
