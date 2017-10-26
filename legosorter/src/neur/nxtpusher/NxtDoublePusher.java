@@ -118,12 +118,12 @@ public class NxtDoublePusher implements IPusher
 
     case PUSHER3:
     case PUSHER4:
-      delay = 1600;
+      delay = 1800;
       break;
 
     case PUSHER5:
     case PUSHER6:
-      delay = 2600;
+      delay = 2800;
       break;
     }
 
