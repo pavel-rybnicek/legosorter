@@ -14,6 +14,7 @@ import neur.nnet.INNet;
 import neur.nnet.NNetFactory;
 import neur.nnet.NNetFactory.NNetType;
 import neur.nxtpusher.PushQueue;
+import neur.nxtpusher.PusherFactory.PusherType;
 
 public class CaptureAndSort
 {
@@ -24,6 +25,8 @@ public class CaptureAndSort
   final static String NET_FILE = "picam_colors.nnet";
 
   final static Cam cameraType = Cam.RASPBERRY;
+  
+  public final static PusherType pusherType = PusherType.VIRTUAL_PUSHER;
 
   private static boolean exit = false;
 
