@@ -15,7 +15,7 @@ import javax.imageio.ImageIO;
  */
 public class PiCamera implements ICamera
 {
-  private static final String serverAddress = "10.27.133.8";
+  private static final String serverAddress = "10.27.133.11";
   private static final int PORT = 8001;
 
   private Socket socket = null;
