@@ -14,8 +14,8 @@ import numpy as np
 HOST = '0.0.0.0'   # Symbolic name meaning all available interfaces
 PORT = 8001 # Arbitrary non-privileged port
 
-MIN_BRT = 160
-MAX_BRT = 170
+MIN_BRT = 125
+MAX_BRT = 135
  
 camera = PiCamera(resolution=(640, 480), framerate=30)
 # Set ISO to the desired value
@@ -28,7 +28,7 @@ camera.exposure_mode = 'off'
 g = camera.awb_gains
 camera.awb_mode = 'auto'
 camera.awb_gains = g
-camera.brightness = 55
+camera.brightness = 45
 camera.contrast = 55
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -114,7 +114,7 @@ def getBrightness():
     output = output.reshape((640, 480, 3))
     output = output[70:570, :110, :] 
     currentBrt = np.average(output)
-    print currentBrt
+    print 'Cam: ' + str(camera.brightness) + ' Img: ' + str(currentBrt)
     return currentBrt
 
 # nastavime inicialni jas
