@@ -50,15 +50,14 @@ public class NeurophNNet implements INNet
 
     int resultValueInt = (int) (resultValue * 100);
 
-    if (30 > resultValueInt)
+    if (10 > resultValueInt)
+    {
+      resultString = "no";
+    }
+    else if (90 > resultValueInt)
     {
       resultString = "unknown";
     }
-   /* 
-    if (!resultString.startsWith("unknown") && !resultString.startsWith("no"))
-    {
-      System.out.println(outputMap.toString());
-    }*/
 
     return resultString + "_" + resultValueInt;
   }
