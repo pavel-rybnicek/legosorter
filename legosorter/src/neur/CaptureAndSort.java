@@ -19,14 +19,15 @@ import neur.nxtpusher.PusherFactory.PusherType;
 public class CaptureAndSort
 {
   private final static String OUTPUT_PATH = "C:/data/LEGO/legosorter/picam_colors/test";
+  private final static String UNKNOWN_PATH = "C:/data/LEGO/legosorter/picam_colors/test";
 
   private final static String NET_PATH = "C:/data/LEGO/legosorter/neuroph/NeurophProject/Neural Networks";
 
   final static String NET_FILE = "picam_colors.nnet";
 
   final static Cam cameraType = Cam.RASPBERRY;
-  
-  public final static PusherType pusherType = PusherType.VIRTUAL_PUSHER;
+
+  public final static PusherType pusherType = PusherType.NXTDOUBLEPUSHER;
 
   private static boolean exit = false;
 
@@ -78,29 +79,35 @@ public class CaptureAndSort
       String result = nnet.evaluateImage(imageCropped);
 
       i++;
-      
+
       String eventName = result.substring(0, result.indexOf('_'));
 
-      if ("no".equals(eventName) || "unknown".equals(eventName))
+      if ("no".equals(eventName))
       {
+        continue;
+      }
+
+      if ("unknown".equals(eventName))
+      {
+        saveImage(UNKNOWN_PATH, result, i, imageCropped);
         continue;
       }
 
       pushQueue.addEvent(eventName);
 
-      saveImage(result, i, imageCropped);
+      saveImage(OUTPUT_PATH, result, i, imageCropped);
     }
   }
 
-  private static void saveImage(String color, long i, BufferedImage image)
-      throws IOException
+  private static void saveImage(String path, String color, long i,
+      BufferedImage image) throws IOException
   {
 
     String fileName = color + "_img" + i + ".png";
 
     System.out.println(fileName);
 
-    ImageIO.write(image, "PNG", new File(OUTPUT_PATH + "/" + fileName));
+    ImageIO.write(image, "PNG", new File(path + "/" + fileName));
   }
 
   public static boolean isExit()
