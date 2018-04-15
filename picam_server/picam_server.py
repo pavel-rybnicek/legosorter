@@ -9,6 +9,7 @@ import time
 import struct
 from thread import *
 from picamera import PiCamera
+from blinkt import set_pixel, set_brightness, show, clear
 import numpy as np
  
 HOST = '0.0.0.0'   # Symbolic name meaning all available interfaces
@@ -28,8 +29,8 @@ camera.exposure_mode = 'off'
 g = camera.awb_gains
 camera.awb_mode = 'auto'
 camera.awb_gains = g
-camera.brightness = 45
-camera.contrast = 55
+#camera.brightness = 45
+#camera.contrast = 55
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -48,6 +49,23 @@ print 'Socket bind complete'
 s.listen(10)
 print 'Socket now listening'
  
+# zapneme blinkt naplno
+def blinktOn():
+    set_brightness(1)
+    clear()
+    set_pixel(0, 255, 255, 255)
+    set_pixel(1, 255, 255, 255)
+    set_pixel(2, 255, 255, 255)
+    set_pixel(3, 255, 255, 255)
+    set_pixel(4, 255, 255, 255)
+    set_pixel(5, 255, 255, 255)
+    set_pixel(6, 255, 255, 255)
+    set_pixel(7, 255, 255, 255)
+    show()
+
+# zapneme svetlo
+blinktOn()
+
 #Function for handling connections. This will be used to create threads
 def clientthread(conn):
     #Sending message to connected client
@@ -60,11 +78,12 @@ def clientthread(conn):
          
         #Receiving from client
         print '1 ',time.time()
+        print 'Cam: ' + str(camera.brightness) + ' con: ' + str(camera.contrast)
         data = conn.recv(1024)
 
         # zkorigujeme jas
         if i > 40:
-            adjustBrightness()
+    #        adjustBrightness()
             i = 0
         
         camera.capture(my_stream, 'jpeg', use_video_port = True)
@@ -118,8 +137,9 @@ def getBrightness():
     return currentBrt
 
 # nastavime inicialni jas
-setBrightness()
- 
+#setBrightness()
+
+
 #now keep talking with the client
 while 1:
     #wait to accept a connection - blocking call
