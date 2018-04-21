@@ -7,12 +7,12 @@ import socket
 import sys
 import time
 import struct
-from thread import *
 from picamera import PiCamera
 from blinkt import set_pixel, set_brightness, show, clear
 import numpy as np
+
  
-HOST = '0.0.0.0'   # Symbolic name meaning all available interfaces
+HOST = 'neurotik.praha12.czf'   # Symbolic name meaning all available interfaces
 PORT = 8001 # Arbitrary non-privileged port
 
 MIN_BRT = 125
@@ -31,23 +31,9 @@ camera.awb_mode = 'auto'
 camera.awb_gains = g
 #camera.brightness = 45
 #camera.contrast = 55
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-print 'Socket created'
- 
-#Bind socket to local host and port
-try:
-    s.bind((HOST, PORT))
-except socket.error as msg:
-    print 'Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
-    sys.exit()
-     
-print 'Socket bind complete'
+camera.zoom = (0.3, 0.3, 0.5, 0.5)
  
 #Start listening on socket
-s.listen(10)
-print 'Socket now listening'
  
 # zapneme blinkt naplno
 def blinktOn():
@@ -66,87 +52,39 @@ def blinktOn():
 # zapneme svetlo
 blinktOn()
 
-#Function for handling connections. This will be used to create threads
-def clientthread(conn):
-    #Sending message to connected client
-#    conn.send('Welcome to the server. Type something and hit enter\n') #send only takes string
-    
-    my_stream = io.BytesIO()
-    #infinite loop so that function do not terminate and thread do not end.
-    i = 0
-    while True:
-         
-        #Receiving from client
-        print '1 ',time.time()
-        print 'Cam: ' + str(camera.brightness) + ' con: ' + str(camera.contrast)
-        data = conn.recv(1024)
+# Connect a client socket to my_server:8000 (change my_server to the
+# hostname of your server)
+client_socket = socket.socket()
+client_socket.connect(('neurotik.praha12.czf', 8200))
 
-        # zkorigujeme jas
-        if i > 40:
-    #        adjustBrightness()
-            i = 0
-        
-        camera.capture(my_stream, 'jpeg', use_video_port = True)
-       
-        filesocket = conn.makefile('wb') 
-        
-        delka = my_stream.tell()
-        filesocket.write(struct.pack('>l', delka))
-        filesocket.flush()
+# Make a file-like object out of the connection
+connection = client_socket.makefile('wb')
+try:
+        time.sleep(2)
 
-        # Rewind the stream and send the image data over the wire
-        my_stream.seek(0)
-        filesocket.write(my_stream.read())
-        filesocket.flush()
-        
-        # Reset the stream for the next capture
-        my_stream.seek(0)
-        my_stream.truncate()
+        # Note the start time and construct a stream to hold image data
+        # temporarily (we could write it directly to connection but in this
+        # case we want to find out the size of each capture first to keep
+        # our protocol simple)
+        start = time.time()
+        stream = io.BytesIO()
+        for foo in camera.capture_continuous(stream, 'jpeg'):
+            # Write the length of the capture to the stream and flush to
+            # ensure it actually gets sent
+            connection.write(struct.pack('<L', stream.tell()))
+            connection.flush()
+            # Rewind the stream and send the image data over the wire
+            stream.seek(0)
+            connection.write(stream.read())
+            # If we've been capturing for more than 30 seconds, quit
+            #if time.time() - start > 30:
+                                #break
+            # Reset the stream for the next capture
+            stream.seek(0)
+            stream.truncate()
+        # Write a length of zero to the stream to signal we're done
+        connection.write(struct.pack('<L', 0))
+finally:
+    connection.close()
+    client_socket.close()
 
-        i = i + 1
-        
- 
-    #came out of loop
-    conn.close()
- 
-# srovnani jasu na konstantni uroven
-def setBrightness():
-    while getBrightness() < MIN_BRT:
-        camera.brightness = camera.brightness + 1
-    
-    while getBrightness() > MAX_BRT:
-        camera.brightness = camera.brightness - 1
-
-# srovnani jasu na konstantni uroven
-def adjustBrightness():
-    currentBrt = getBrightness()
-    
-    if currentBrt < MIN_BRT:
-        camera.brightness = camera.brightness + 1
-    elif currentBrt > MAX_BRT:
-        camera.brightness = camera.brightness - 1
-
-# zjisti aktualni jas bile plochy
-def getBrightness():
-    output = np.empty((640 * 480 * 3,), dtype=np.uint8)
-    camera.capture(output, 'rgb')
-    output = output.reshape((640, 480, 3))
-    output = output[70:570, :110, :] 
-    currentBrt = np.average(output)
-    print 'Cam: ' + str(camera.brightness) + ' Img: ' + str(currentBrt)
-    return currentBrt
-
-# nastavime inicialni jas
-#setBrightness()
-
-
-#now keep talking with the client
-while 1:
-    #wait to accept a connection - blocking call
-    conn, addr = s.accept()
-    print 'Connected with ' + addr[0] + ':' + str(addr[1])
-     
-    #start new thread takes 1st argument as a function name to be run, second is the tuple of arguments to the function.
-    start_new_thread(clientthread ,(conn,))
- 
-s.close()
