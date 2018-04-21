@@ -16,7 +16,7 @@ import neur.CaptureAndSort;
  */
 public class NxtDoublePusher implements IPusher
 {
-  private final int STEP = 4*36;
+  private final int STEP = 5*36/3;
   
   private NXTConnector conn = null;
 
@@ -123,7 +123,7 @@ public class NxtDoublePusher implements IPusher
 
     case PUSHER5:
     case PUSHER6:
-      delay = 2600;
+      delay = 2700;
       break;
     }
 

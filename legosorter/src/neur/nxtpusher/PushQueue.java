@@ -3,15 +3,12 @@ package neur.nxtpusher;
 import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.ConcurrentSkipListSet;
-
-import neur.nxtpusher.PusherFactory.PusherType;
+import neur.CaptureAndSort;
 
 public class PushQueue implements Runnable
 {
   private int WINDOW_SIZE = 50;
   
-  private PusherType pusherType = PusherType.NXTDOUBLEPUSHER;
-
   private static ConcurrentSkipListSet<PushEvent> queue = new ConcurrentSkipListSet<PushEvent>();
   
   private IPusher pusher = null;
@@ -61,7 +58,7 @@ public class PushQueue implements Runnable
   {
     try
     {
-      pusher = PusherFactory.getPusher(pusherType);
+      pusher = PusherFactory.getPusher(CaptureAndSort.pusherType);
       pusher.init();
 
       processQueue();
