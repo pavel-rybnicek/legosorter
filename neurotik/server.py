@@ -54,6 +54,13 @@ def readImageFromClient():
     return Image.open(image_stream)
 
 def classifyImage(learn, val_tfms, image):
+        #image = image2.convert('RGB')
+        #open_cv_image = numpy.array(image)
+        #open_cv_image = open_cv_image[:, :, ::-1].copy()
+        #print('Image is %dx%d' % image.size)
+        #image.verify()
+        #print('Image is verified')
+
     image2.save("out.jpg", "JPEG")
     im= val_tfms(open_image('out.jpg'))
     learn.precompute=False
@@ -67,22 +74,15 @@ def classifyImage(learn, val_tfms, image):
 
 server_socket = getListenningSocket()
 
-# Accept a single connection and make a file-like object out of it
-connection = server_socket.accept()[0].makefile('rb')
 try:
     while True:
+        # Accept a single connection and make a file-like object out of it
+        connection = server_socket.accept()[0].makefile('rb')
         image2 = readImageFromClient()
         
-        #image = image2.convert('RGB')
-        #open_cv_image = numpy.array(image)
-        #open_cv_image = open_cv_image[:, :, ::-1].copy()
-        #print('Image is %dx%d' % image.size)
-        #image.verify()
-        #print('Image is verified')
-
         classification = classifyImage(learn, val_tfms, image2) 
         print(classification)
+        connection.close()
 
 finally:
-    connection.close()
     server_socket.close()
