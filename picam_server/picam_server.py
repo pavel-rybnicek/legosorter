@@ -77,9 +77,6 @@ blinktOn()
 # spustíme kameru
 camera = getCamera()
 
-# navážeme spojení s neurotikem
-connection = getConnection()
-
 try:
     # Construct a stream to hold image data
     # temporarily (we could write it directly to connection but in this
@@ -88,11 +85,15 @@ try:
     stream = io.BytesIO()
     for foo in camera.capture_continuous(stream, 'jpeg'):
         print(time.time())
+        # navážeme spojení s neurotikem
+        connection = getConnection()
+
         sendImage(connection, stream)
+        connection.close()
+
         print(time.time())
         print("")
 
 finally:
-    connection.close()
     client_socket.close()
 
