@@ -77,12 +77,19 @@ server_socket = getListenningSocket()
 try:
     while True:
         # Accept a single connection and make a file-like object out of it
-        connection = server_socket.accept()[0].makefile('rb')
+        socket = server_socket.accept()[0]
+        connection = socket.makefile('rb')
         image2 = readImageFromClient()
         
         classification = classifyImage(learn, val_tfms, image2) 
         print(classification)
+       
+        conn2=socket.makefile('wb')
+        conn2.write(struct.pack('<L', classification))
+        conn2.flush()
+
         connection.close()
+        conn2.close()
 
 finally:
     server_socket.close()
