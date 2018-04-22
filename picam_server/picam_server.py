@@ -20,7 +20,7 @@ PORT = 8001 # Arbitrary non-privileged port
 
 CLASSIFICATION_NONE = 1
 
-WINDOW_SIZE = 0.1
+WINDOW_SIZE = 0.03
 
 MOTOR_B_DELAY = 2.3
 
@@ -43,14 +43,10 @@ def queueProcessor(queue):
     brick = nxt_init()
     while True:
         pushEvent = queue.get()
-        print('Načteno z fronty, jdu spát')
-        print(time.time())
-        time.sleep(.1)
-        print(time.time())
+        time.sleep(.01)
         queue.task_done()
         
         timeToNext = pushEvent[0] - time.time()
-        print('timeToNext %f' % timeToNext)
         if timeToNext > WINDOW_SIZE:
             queue.put(pushEvent)
             continue
@@ -111,7 +107,7 @@ def getConnection():
     # Connect a client socket to my_server:8000 (change my_server to the
     # hostname of your server)
     client_socket = socket.socket()
-    client_socket.connect(('neurotik.praha12.czf', 8200))
+    client_socket.connect(('neurotik.praha12.czf', 8201))
 
     # Make a file-like object out of the connection
     connection_write = client_socket.makefile('wb')
