@@ -32,7 +32,7 @@ def initNeuralNetwork():
 
 def getListenningSocket():
     server_socket = socket.socket()
-    server_socket.bind(('0.0.0.0', 8200))
+    server_socket.bind(('0.0.0.0', 8201))
     server_socket.listen(0)
 
     return server_socket
@@ -66,6 +66,12 @@ def classifyImage(learn, val_tfms, image):
     learn.precompute=False
     pred1 = learn.predict_array(im[None])
     prob = np.argmax(np.exp(pred1))
+    if -0.1 > pred1[0,prob]:
+        print(pred1)
+        image2.save('unknown/%d_%f.jpg' % (prob, time.time()), "JPEG")
+        prob = 1
+    else:
+        image2.save('%d/%d_%f.jpg' % (prob, prob, time.time()), "JPEG")
 
     return prob
 
