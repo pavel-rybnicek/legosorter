@@ -18,11 +18,11 @@ pushQueue = PriorityQueue()
 HOST = 'neurotik.praha12.czf'   # Symbolic name meaning all available interfaces
 PORT = 8001 # Arbitrary non-privileged port
 
-CLASSIFICATION_NONE = 1
+CLASSIFICATION_NONE = 0
 
 WINDOW_SIZE = 0.03
 
-MOTOR_B_DELAY = 2.3
+MOTOR_B_DELAY = 2.6
 
 MOTOR_ROTATION=85
 
@@ -31,7 +31,7 @@ def nxt_push(brick, classification):
     if 2 == classification:
         m_left = Motor(brick, PORT_B)
         m_left.turn(100, MOTOR_ROTATION)
-    if 0 == classification:
+    if 1 == classification:
         m_left = Motor(brick, PORT_B)
         m_left.turn(-100, MOTOR_ROTATION)
 
@@ -52,8 +52,6 @@ def queueProcessor(queue):
             continue
 
         if timeToNext > 0:
-            print(time.time())
-            print('vyhazuju')
             nxt_push(brick, pushEvent[1])
 
 
