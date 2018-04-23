@@ -8,7 +8,7 @@ from picamera import PiCamera
 from blinkt import set_pixel, set_brightness, show, clear
 import numpy as np
 import nxt.locator
-from nxt.motor import *
+import nxt.motcont
 
 from Queue import PriorityQueue
 from threading import Thread
@@ -24,37 +24,38 @@ WINDOW_SIZE = 0.03
 
 MOTOR_B_DELAY = 2.6
 
-MOTOR_ROTATION=85
+MOTOR_ROTATION=36*5
 
-def nxt_push(brick, classification):
+def nxt_push(motorControl, classification):
     print('push %d' % classification)
     if 2 == classification:
-        m_left = Motor(brick, PORT_B)
-        m_left.turn(100, MOTOR_ROTATION)
+        motorControl.cmd(nxt.PORT_B, 100, MOTOR_ROTATION)
     if 1 == classification:
-        m_left = Motor(brick, PORT_B)
-        m_left.turn(-100, MOTOR_ROTATION)
+        motorControl.cmd(nxt.PORT_B, -100, MOTOR_ROTATION)
 
 def nxt_init():
   brick = nxt.locator.find_one_brick(debug=True)
-  return brick
+  motorControl = nxt.motcont.MotCont(brick)
+  motorControl.start()
+  return brick, motorControl
 
 def queueProcessor(queue):
-    brick = nxt_init()
-    while True:
-        pushEvent = queue.get()
-        time.sleep(.01)
-        queue.task_done()
-        
-        timeToNext = pushEvent[0] - time.time()
-        if timeToNext > WINDOW_SIZE:
-            queue.put(pushEvent)
-            continue
+    brick, motorControl = nxt_init()
+    try:
+        while True:
+            pushEvent = queue.get()
+            time.sleep(.01)
+            queue.task_done()
+            
+            timeToNext = pushEvent[0] - time.time()
+            if timeToNext > WINDOW_SIZE:
+                queue.put(pushEvent)
+                continue
 
-        if timeToNext > 0:
-            nxt_push(brick, pushEvent[1])
-
-
+            if timeToNext > 0:
+                nxt_push(motorControl, pushEvent[1])
+    finally:
+        brick.stop_program()
 
 def getCamera():
     camera = PiCamera(resolution=(640, 480), framerate=30)

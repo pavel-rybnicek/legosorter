@@ -8,3 +8,7 @@ git clone http://git.ni.fr.eu.org/pyfantom.git/
 wget https://github.com/Eelviny/nxt-python/archive/v2.2.2.tar.gz
 	after extraction:
 	sudo python setup.py install
+
+Required on NXT:
+http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl
+
