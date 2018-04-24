@@ -21,7 +21,7 @@ CLASSIFICATION_NONE = 0
 
 WINDOW_SIZE = 0.03
 
-MOTOR_A_DELAY = 1.4
+MOTOR_A_DELAY = 0.9
 MOTOR_B_DELAY = 2.4
 MOTOR_C_DELAY = 4.1
 
@@ -108,13 +108,13 @@ def putToQueue (queue, time, classification):
         return;
 
     if 1 == classification:
-        event = (time + MOTOR_B_DELAY, classification)
+        event = (time + MOTOR_A_DELAY, classification)
     if 2 == classification:
-        event = (time + MOTOR_B_DELAY, classification)
+        event = (time + MOTOR_A_DELAY, classification)
     if 3 == classification:
-        event = (time + MOTOR_A_DELAY, classification)
+        event = (time + MOTOR_B_DELAY, classification)
     if 4 == classification:
-        event = (time + MOTOR_A_DELAY, classification)
+        event = (time + MOTOR_B_DELAY, classification)
     if 5 == classification:
         event = (time + MOTOR_C_DELAY, classification)
     if 6 == classification:
