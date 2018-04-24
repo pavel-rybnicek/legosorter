@@ -1,7 +1,4 @@
-'''
-    Simple socket server using threads
-'''
-
+# coding=UTF-8
 import io 
 import socket
 import sys
@@ -10,10 +7,44 @@ import struct
 from picamera import PiCamera
 from blinkt import set_pixel, set_brightness, show, clear
 import numpy as np
+from nxtPusher import *
 
- 
+from Queue import PriorityQueue
+from threading import Thread
+
+pushQueue = PriorityQueue()
+
 HOST = 'neurotik.praha12.czf'   # Symbolic name meaning all available interfaces
 PORT = 8001 # Arbitrary non-privileged port
+
+CLASSIFICATION_NONE = 0
+
+WINDOW_SIZE = 0.03
+
+MOTOR_A_DELAY = 0.9
+MOTOR_B_DELAY = 2.4
+MOTOR_C_DELAY = 4.1
+
+MOTOR_ROTATION=36*5/3
+
+def queueProcessor(queue):
+    brick, motorControl = nxt_init()
+    try:
+        while True:
+            pushEvent = queue.get()
+            time.sleep(.01)
+            queue.task_done()
+            
+            timeToNext = pushEvent[0] - time.time()
+            if timeToNext > WINDOW_SIZE:
+                queue.put(pushEvent)
+                continue
+
+            if timeToNext > 0:
+                nxt_push(motorControl, pushEvent[1])
+    finally:
+        print('Trying to stop MotorControl')
+        brick.stop_program()
 
 def getCamera():
     camera = PiCamera(resolution=(640, 480), framerate=30)
@@ -64,21 +95,48 @@ def getConnection():
     # Connect a client socket to my_server:8000 (change my_server to the
     # hostname of your server)
     client_socket = socket.socket()
-    client_socket.connect(('neurotik.praha12.czf', 8200))
+    client_socket.connect(('neurotik.praha12.czf', 8201))
 
     # Make a file-like object out of the connection
-    connection = client_socket.makefile('wb')
+    connection_write = client_socket.makefile('wb')
+    connection_read  = client_socket.makefile('rb')
 
-    return connection
-    
+    return connection_read, connection_write
+   
+def putToQueue (queue, time, classification):
+    if CLASSIFICATION_NONE == classification:
+        return;
+
+    if 1 == classification:
+        event = (time + MOTOR_A_DELAY, classification)
+    if 2 == classification:
+        event = (time + MOTOR_A_DELAY, classification)
+    if 3 == classification:
+        event = (time + MOTOR_B_DELAY, classification)
+    if 4 == classification:
+        event = (time + MOTOR_B_DELAY, classification)
+    if 5 == classification:
+        event = (time + MOTOR_C_DELAY, classification)
+    if 6 == classification:
+        event = (time + MOTOR_C_DELAY, classification)
+    if 7 == classification:
+        event = (time + MOTOR_C_DELAY, 5)
+    if 8 == classification:
+        event = (time + MOTOR_C_DELAY, 6)
+    pushQueue.put(event)
+
+
+
 # zapneme svetlo
 blinktOn()
 
 # spustíme kameru
 camera = getCamera()
 
-# navážeme spojení s neurotikem
-connection = getConnection()
+# spustíme frontu zpracování
+worker = Thread(target=queueProcessor, args=(pushQueue,))
+worker.setDaemon(True)
+worker.start()
 
 try:
     # Construct a stream to hold image data
@@ -87,12 +145,24 @@ try:
     # our protocol simple)
     stream = io.BytesIO()
     for foo in camera.capture_continuous(stream, 'jpeg'):
-        print(time.time())
+        imageTime = time.time()
+        #print(time.time())
+        # navážeme spojení s neurotikem
+        (connection_read, connection) = getConnection()
+
         sendImage(connection, stream)
-        print(time.time())
-        print("")
+        
+        classification = struct.unpack('<L', connection_read.read(struct.calcsize('<L')))[0]
+        
+        putToQueue(pushQueue, imageTime, classification)
+
+        connection.close()
+        connection_read.close()
+
+        #print(time.time())
+        #print(classification)
+        #print("")
 
 finally:
-    connection.close()
     client_socket.close()
 
