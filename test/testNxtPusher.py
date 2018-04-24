@@ -10,13 +10,33 @@ import nxt
 class TestNxt(unittest.TestCase):
     def test_nxt_push_2(self):
         mock = MagicMock()
-        nxt_push(mock, 2)
-        assert mock.cmd.mock_calls == [call(nxt.PORT_B, 100, MOTOR_ROTATION)]
+        nxt_push(mock, 1)
+        assert mock.cmd.mock_calls == [call(nxt.PORT_A, -100, MOTOR_ROTATION)]
 
     def test_nxt_push_1(self):
         mock = MagicMock()
-        nxt_push(mock, 1)
+        nxt_push(mock, 2)
+        assert mock.cmd.mock_calls == [call(nxt.PORT_A, 100, MOTOR_ROTATION)]
+
+    def test_nxt_push_3(self):
+        mock = MagicMock()
+        nxt_push(mock, 3)
         assert mock.cmd.mock_calls == [call(nxt.PORT_B, -100, MOTOR_ROTATION)]
+
+    def test_nxt_push_4(self):
+        mock = MagicMock()
+        nxt_push(mock, 4)
+        assert mock.cmd.mock_calls == [call(nxt.PORT_B, 100, MOTOR_ROTATION)]
+
+    def test_nxt_push_5(self):
+        mock = MagicMock()
+        nxt_push(mock, 5)
+        assert mock.cmd.mock_calls == [call(nxt.PORT_C, -100, MOTOR_ROTATION)]
+
+    def test_nxt_push_6(self):
+        mock = MagicMock()
+        nxt_push(mock, 6)
+        assert mock.cmd.mock_calls == [call(nxt.PORT_C, 100, MOTOR_ROTATION)]
 
     def test_nxt_push_invalid_classification2(self):
         mock = MagicMock()

@@ -7,8 +7,7 @@ import struct
 from picamera import PiCamera
 from blinkt import set_pixel, set_brightness, show, clear
 import numpy as np
-import nxt.locator
-import nxt.motcont
+from nxtPusher import *
 
 from Queue import PriorityQueue
 from threading import Thread
@@ -22,22 +21,11 @@ CLASSIFICATION_NONE = 0
 
 WINDOW_SIZE = 0.03
 
-MOTOR_B_DELAY = 2.6
+MOTOR_A_DELAY = 1.4
+MOTOR_B_DELAY = 2.4
+MOTOR_C_DELAY = 4.1
 
-MOTOR_ROTATION=36*5
-
-def nxt_push(motorControl, classification):
-    print('push %d' % classification)
-    if 2 == classification:
-        motorControl.cmd(nxt.PORT_B, 100, MOTOR_ROTATION)
-    if 1 == classification:
-        motorControl.cmd(nxt.PORT_B, -100, MOTOR_ROTATION)
-
-def nxt_init():
-  brick = nxt.locator.find_one_brick(debug=True)
-  motorControl = nxt.motcont.MotCont(brick)
-  motorControl.start()
-  return brick, motorControl
+MOTOR_ROTATION=36*5/3
 
 def queueProcessor(queue):
     brick, motorControl = nxt_init()
@@ -55,6 +43,7 @@ def queueProcessor(queue):
             if timeToNext > 0:
                 nxt_push(motorControl, pushEvent[1])
     finally:
+        print('Trying to stop MotorControl')
         brick.stop_program()
 
 def getCamera():
@@ -118,7 +107,22 @@ def putToQueue (queue, time, classification):
     if CLASSIFICATION_NONE == classification:
         return;
 
-    event = (time + MOTOR_B_DELAY, classification)
+    if 1 == classification:
+        event = (time + MOTOR_B_DELAY, classification)
+    if 2 == classification:
+        event = (time + MOTOR_B_DELAY, classification)
+    if 3 == classification:
+        event = (time + MOTOR_A_DELAY, classification)
+    if 4 == classification:
+        event = (time + MOTOR_A_DELAY, classification)
+    if 5 == classification:
+        event = (time + MOTOR_C_DELAY, classification)
+    if 6 == classification:
+        event = (time + MOTOR_C_DELAY, classification)
+    if 7 == classification:
+        event = (time + MOTOR_C_DELAY, 5)
+    if 8 == classification:
+        event = (time + MOTOR_C_DELAY, 6)
     pushQueue.put(event)
 
 
