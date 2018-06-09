@@ -21,9 +21,9 @@ CLASSIFICATION_NONE = 0
 
 WINDOW_SIZE = 0.03
 
-MOTOR_A_DELAY = 0.9
-MOTOR_B_DELAY = 2.4
-MOTOR_C_DELAY = 4.1
+MOTOR_A_DELAY = 1.2
+MOTOR_B_DELAY = 2.7
+MOTOR_C_DELAY = 4.4
 
 MOTOR_ROTATION=36*5/3
 
@@ -47,7 +47,7 @@ def queueProcessor(queue):
         brick.stop_program()
 
 def getCamera():
-    camera = PiCamera(resolution=(640, 480), framerate=30)
+    camera = PiCamera(resolution=(480, 480), framerate=30)
     # Set ISO to the desired value
     camera.iso = 100
     # Wait for the automatic gain control to settle
@@ -58,7 +58,7 @@ def getCamera():
     g = camera.awb_gains
     camera.awb_mode = 'auto'
     camera.awb_gains = g
-    camera.zoom = (0.3, 0.3, 0.5, 0.5)
+    camera.zoom = (0.43, 0.43, 0.29, 0.29)
 
     return camera
 
@@ -123,6 +123,8 @@ def putToQueue (queue, time, classification):
         event = (time + MOTOR_C_DELAY, 5)
     if 8 == classification:
         event = (time + MOTOR_C_DELAY, 6)
+    if 9 == classification:
+        event = (time + MOTOR_C_DELAY, 6)
     pushQueue.put(event)
 
 # nastavíme semafor pro běh
@@ -166,5 +168,6 @@ try:
 
 except KeyboardInterrupt:
     stillRunning = False
+    time.sleep(1)
     client_socket.close()
 
