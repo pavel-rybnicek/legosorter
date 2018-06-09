@@ -30,7 +30,7 @@ MOTOR_ROTATION=36*5/3
 def queueProcessor(queue):
     brick, motorControl = nxt_init()
     try:
-        while True:
+        while stillRunning:
             pushEvent = queue.get()
             time.sleep(.01)
             queue.task_done()
@@ -125,7 +125,8 @@ def putToQueue (queue, time, classification):
         event = (time + MOTOR_C_DELAY, 6)
     pushQueue.put(event)
 
-
+# nastavíme semafor pro běh
+stillRunning = True
 
 # zapneme svetlo
 blinktOn()
@@ -163,6 +164,7 @@ try:
         #print(classification)
         #print("")
 
-finally:
+except KeyboardInterrupt:
+    stillRunning = False
     client_socket.close()
 
