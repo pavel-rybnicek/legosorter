@@ -23,10 +23,9 @@ def initNeuralNetwork():
 
     arch=resnet34
     data = ImageClassifierData.from_paths(PATH, tfms=tfms_from_model(arch, sz))
-    learn = ConvLearner.pretrained(arch, data, precompute=True)
-    learn.load('224_lastlayer')
+    learn = ConvLearner.pretrained(arch, data, precompute=False)
+    learn.load('224_brick_last')
     print('start')
-    filename='/home/pryb/fastai/courses/dl1/data/brick/test1/a3.jpg'
     trn_tfms, val_tfms = tfms_from_model(resnet34, sz, aug_tfms = transforms_side_on, max_zoom = 1.1)
     return learn, val_tfms
 
@@ -66,12 +65,13 @@ def classifyImage(learn, val_tfms, image):
     learn.precompute=False
     pred1 = learn.predict_array(im[None])
     prob = np.argmax(np.exp(pred1))
-    if -0.1 > pred1[0,prob]:
+    if -0.3 > pred1[0,prob]:
         print(pred1)
         image2.save('unknown/%d_%f.jpg' % (prob, time.time()), "JPEG")
-        prob = 1
+        prob = 0
     else:
-        image2.save('%d/%d_%f.jpg' % (prob, prob, time.time()), "JPEG")
+        if prob > 0:
+            image2.save('%d/%d_%f.jpg' % (prob, prob, time.time()), "JPEG")
 
     return prob
 
