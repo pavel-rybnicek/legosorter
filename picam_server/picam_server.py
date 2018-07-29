@@ -4,6 +4,7 @@ import socket
 import sys
 import time
 import struct
+from optparse import OptionParser
 from picamera import PiCamera
 from blinkt import set_pixel, set_brightness, show, clear
 import numpy as np
@@ -14,16 +15,16 @@ from threading import Thread
 
 pushQueue = PriorityQueue()
 
-HOST = 'neurotik.praha12.czf'   # Symbolic name meaning all available interfaces
+HOST = '72.52.111.156'   # Symbolic name meaning all available interfaces
 PORT = 8001 # Arbitrary non-privileged port
 
 CLASSIFICATION_NONE = 0
 
 WINDOW_SIZE = 0.03
 
-MOTOR_A_DELAY = 0.9
-MOTOR_B_DELAY = 2.4
-MOTOR_C_DELAY = 4.1
+MOTOR_A_DELAY = 1.2
+MOTOR_B_DELAY = 2.7
+MOTOR_C_DELAY = 4.4
 
 MOTOR_ROTATION=36*5/3
 
@@ -47,7 +48,7 @@ def queueProcessor(queue):
         brick.stop_program()
 
 def getCamera():
-    camera = PiCamera(resolution=(640, 480), framerate=30)
+    camera = PiCamera(resolution=(480, 480), framerate=30)
     # Set ISO to the desired value
     camera.iso = 100
     # Wait for the automatic gain control to settle
@@ -58,7 +59,7 @@ def getCamera():
     g = camera.awb_gains
     camera.awb_mode = 'auto'
     camera.awb_gains = g
-    camera.zoom = (0.3, 0.3, 0.5, 0.5)
+    camera.zoom = (0.43, 0.43, 0.29, 0.29)
 
     return camera
 
@@ -95,7 +96,7 @@ def getConnection():
     # Connect a client socket to my_server:8000 (change my_server to the
     # hostname of your server)
     client_socket = socket.socket()
-    client_socket.connect(('neurotik.praha12.czf', 8201))
+    client_socket.connect(('localhost', 8201))
 
     # Make a file-like object out of the connection
     connection_write = client_socket.makefile('wb')
@@ -123,7 +124,14 @@ def putToQueue (queue, time, classification):
         event = (time + MOTOR_C_DELAY, 5)
     if 8 == classification:
         event = (time + MOTOR_C_DELAY, 6)
+    if 9 == classification:
+        event = (time + MOTOR_C_DELAY, 6)
     pushQueue.put(event)
+
+# zpracujem příkazovou řádku
+parser = OptionParser()
+parser.add_option("--dry-run", action="store_true", dest="dryRun") # nepokusi se spustit NXT
+(options, args) = parser.parse_args()
 
 # nastavíme semafor pro běh
 stillRunning = True
@@ -134,10 +142,11 @@ blinktOn()
 # spustíme kameru
 camera = getCamera()
 
-# spustíme frontu zpracování
-worker = Thread(target=queueProcessor, args=(pushQueue,))
-worker.setDaemon(True)
-worker.start()
+# spustíme frontu zpracování, pokud to není dry run
+if not options.dryRun:
+    worker = Thread(target=queueProcessor, args=(pushQueue,))
+    worker.setDaemon(True)
+    worker.start()
 
 try:
     # Construct a stream to hold image data
@@ -166,5 +175,6 @@ try:
 
 except KeyboardInterrupt:
     stillRunning = False
+    time.sleep(1)
     client_socket.close()
 
