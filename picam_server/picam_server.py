@@ -4,6 +4,7 @@ import socket
 import sys
 import time
 import struct
+from optparse import OptionParser
 from picamera import PiCamera
 from blinkt import set_pixel, set_brightness, show, clear
 import numpy as np
@@ -14,7 +15,7 @@ from threading import Thread
 
 pushQueue = PriorityQueue()
 
-HOST = 'neurotik.praha12.czf'   # Symbolic name meaning all available interfaces
+HOST = '72.52.111.156'   # Symbolic name meaning all available interfaces
 PORT = 8001 # Arbitrary non-privileged port
 
 CLASSIFICATION_NONE = 0
@@ -95,7 +96,7 @@ def getConnection():
     # Connect a client socket to my_server:8000 (change my_server to the
     # hostname of your server)
     client_socket = socket.socket()
-    client_socket.connect(('neurotik.praha12.czf', 8201))
+    client_socket.connect(('localhost', 8201))
 
     # Make a file-like object out of the connection
     connection_write = client_socket.makefile('wb')
@@ -127,6 +128,11 @@ def putToQueue (queue, time, classification):
         event = (time + MOTOR_C_DELAY, 6)
     pushQueue.put(event)
 
+# zpracujem příkazovou řádku
+parser = OptionParser()
+parser.add_option("--dry-run", action="store_true", dest="dryRun") # nepokusi se spustit NXT
+(options, args) = parser.parse_args()
+
 # nastavíme semafor pro běh
 stillRunning = True
 
@@ -136,10 +142,11 @@ blinktOn()
 # spustíme kameru
 camera = getCamera()
 
-# spustíme frontu zpracování
-worker = Thread(target=queueProcessor, args=(pushQueue,))
-worker.setDaemon(True)
-worker.start()
+# spustíme frontu zpracování, pokud to není dry run
+if not options.dryRun:
+    worker = Thread(target=queueProcessor, args=(pushQueue,))
+    worker.setDaemon(True)
+    worker.start()
 
 try:
     # Construct a stream to hold image data
