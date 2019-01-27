@@ -24,7 +24,7 @@ def initNeuralNetwork():
     arch=resnet34
     data = ImageClassifierData.from_paths(PATH, tfms=tfms_from_model(arch, sz))
     learn = ConvLearner.pretrained(arch, data, precompute=False)
-    learn.load('224_brick_last')
+    learn.load('224_brick_all')
     print('start')
     trn_tfms, val_tfms = tfms_from_model(resnet34, sz, aug_tfms = transforms_side_on, max_zoom = 1.1)
     return learn, val_tfms
@@ -53,25 +53,25 @@ def readImageFromClient():
     return Image.open(image_stream)
 
 def classifyImage(learn, val_tfms, image):
-        #image = image2.convert('RGB')
-        #open_cv_image = numpy.array(image)
-        #open_cv_image = open_cv_image[:, :, ::-1].copy()
-        #print('Image is %dx%d' % image.size)
-        #image.verify()
-        #print('Image is verified')
+    #image.save("out.jpg", "JPEG")
+    
+    # prevedeme na openCV
+    imageCV = numpy.array(image.convert('RGB'))
+    imageCV = imageCV[:, :, ::-1].copy()
 
-    image2.save("out.jpg", "JPEG")
-    im= val_tfms(open_image('out.jpg'))
+    im= val_tfms(imageCV.astype(np.float32)/255)
+    #im= val_tfms(open_image('out.jpg'))
     learn.precompute=False
     pred1 = learn.predict_array(im[None])
     prob = np.argmax(np.exp(pred1))
-    if -0.3 > pred1[0,prob]:
+    # predictions are log scale - 0 would be 100% sure
+    if -0.1 > pred1[0,prob]:
         print(pred1)
-        image2.save('unknown/%d_%f.jpg' % (prob, time.time()), "JPEG")
+        image.save('unknown/%d_%f.jpg' % (prob, time.time()), "JPEG")
         prob = 0
     else:
         if prob > 0:
-            image2.save('%d/%d_%f.jpg' % (prob, prob, time.time()), "JPEG")
+            image.save('%d/%d_%f.jpg' % (prob, prob, time.time()), "JPEG")
 
     return prob
 
@@ -85,9 +85,9 @@ try:
         # Accept a single connection and make a file-like object out of it
         socket = server_socket.accept()[0]
         connection = socket.makefile('rb')
-        image2 = readImageFromClient()
+        img = readImageFromClient()
         
-        classification = classifyImage(learn, val_tfms, image2) 
+        classification = classifyImage(learn, val_tfms, img) 
         print(classification)
        
         conn2=socket.makefile('wb')
