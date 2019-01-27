@@ -24,7 +24,7 @@ def initNeuralNetwork():
     arch=resnet34
     data = ImageClassifierData.from_paths(PATH, tfms=tfms_from_model(arch, sz))
     learn = ConvLearner.pretrained(arch, data, precompute=False)
-    learn.load('224_brick_last')
+    learn.load('224_brick_all')
     print('start')
     trn_tfms, val_tfms = tfms_from_model(resnet34, sz, aug_tfms = transforms_side_on, max_zoom = 1.1)
     return learn, val_tfms
@@ -65,7 +65,7 @@ def classifyImage(learn, val_tfms, image):
     pred1 = learn.predict_array(im[None])
     prob = np.argmax(np.exp(pred1))
     # predictions are log scale - 0 would be 100% sure
-    if -0.3 > pred1[0,prob]:
+    if -0.1 > pred1[0,prob]:
         print(pred1)
         image.save('unknown/%d_%f.jpg' % (prob, time.time()), "JPEG")
         prob = 0
