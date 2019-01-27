@@ -59,7 +59,7 @@ def getCamera():
     g = camera.awb_gains
     camera.awb_mode = 'auto'
     camera.awb_gains = g
-    camera.zoom = (0.43, 0.43, 0.29, 0.29)
+    camera.zoom = (0.15, 0.15, 0.7, 0.7)
 
     return camera
 
