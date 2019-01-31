@@ -1,3 +1,8 @@
+# slouží ke sbírání obrázků
+# uchovává fotky dílů, které jsou přiměřeně uprostřed
+
+# počítá se s tím, že díly jsou stejného typu
+
 import sys
 sys.path.insert(0, '/home/pryb/fastai')
 
@@ -31,12 +36,11 @@ def getListenningSocket():
 
     return server_socket
 
-def readImageFromClient():
+def readOpenCvImageFromClient(): # TODO redundantní funkce
     # Read the length of the image as a 32-bit unsigned int. If the
     # length is zero, quit the loop
     image_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
-    #if not image_len:
-                    #break
+
     # Construct a stream to hold the image data and read the image
     # data from the connection
     image_stream = io.BytesIO()
@@ -57,13 +61,20 @@ try:
         # Accept a single connection and make a file-like object out of it
         socket = server_socket.accept()[0]
         connection = socket.makefile('rb')
-        img = readImageFromClient()
+        img = readOpenCvImageFromClient()
         
-        classification = classifyAndSaveImage(learn, val_tfms, img) 
-        print(classification)
-       
+        (classification, predictions) = classifyImage(learn, val_tfms, img) 
+        if 0 < classification:
+          # na obrázku něco je, zjistíme, jestli je to uprostřed
+          imgCropped = cropOpencvImage (img)
+          (classificationCropped, predictionsCropped) = classifyImage (learn, val_tfms, imgCropped)
+          if 0 < classificationCropped:
+            # ano, je to uprostřed. Uložíme obrázek.
+            imgCropped.save('grabbed/g_%f.jpg' % (classificationIndex, time.time()), "JPEG")
+  
+        # od pusheru se nevyžaduje žádná akce, jenom sbíráme obrázky 
         conn2=socket.makefile('wb')
-        conn2.write(struct.pack('<L', classification))
+        conn2.write(struct.pack('<L', 0))
         conn2.flush()
 
         connection.close()
