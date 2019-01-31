@@ -17,6 +17,8 @@ import struct
 from PIL import Image
 import numpy
 
+RESULTS = "/home/pryb/results/"
+
 def initNeuralNetwork():
     PATH = "/home/pryb/data/brick/"
     sz=224
@@ -24,10 +26,17 @@ def initNeuralNetwork():
     arch=resnet34
     data = ImageClassifierData.from_paths(PATH, tfms=tfms_from_model(arch, sz))
     learn = ConvLearner.pretrained(arch, data, precompute=False)
-    learn.load('224_brick_all')
+    learn.load('224_brick_last')
     print('start')
     trn_tfms, val_tfms = tfms_from_model(resnet34, sz, aug_tfms = transforms_side_on, max_zoom = 1.1)
-    return learn, val_tfms
+    return learn, val_tfms, data.classes
+
+def initDirs(classes):
+    shutil.rmtree(RESULTS, ignore_errors=True)
+    os.mkdir(RESULTS) 
+    os.mkdir('%s%s' % (RESULTS, "unknown")) 
+    for x in range(0, len(classes) - 1):
+        os.mkdir('%s%s' % (RESULTS, classes[x])) 
 
 def getListenningSocket():
     server_socket = socket.socket()
@@ -52,7 +61,7 @@ def readImageFromClient():
 
     return Image.open(image_stream)
 
-def classifyImage(learn, val_tfms, image):
+def classifyImage(classes, learn, val_tfms, image):
     #image.save("out.jpg", "JPEG")
     
     # prevedeme na openCV
@@ -61,22 +70,24 @@ def classifyImage(learn, val_tfms, image):
 
     im= val_tfms(imageCV.astype(np.float32)/255)
     #im= val_tfms(open_image('out.jpg'))
-    learn.precompute=False
+    # netreba, uz bylo nastaveno. TODO navic by melo byt true learn.precompute=False
     pred1 = learn.predict_array(im[None])
     prob = np.argmax(np.exp(pred1))
     # predictions are log scale - 0 would be 100% sure
     if -0.1 > pred1[0,prob]:
         print(pred1)
-        image.save('unknown/%d_%f.jpg' % (prob, time.time()), "JPEG")
+        image.save('%sunknown/%d_%f.jpg' % (RESULTS, prob, time.time()), "JPEG")
         prob = 0
     else:
         if prob > 0:
-            image.save('%d/%d_%f.jpg' % (prob, prob, time.time()), "JPEG")
+            image.save('%s%s/%d_%f.jpg' % (RESULTS, classes[prob], prob, time.time()), "JPEG")
 
     return prob
 
 
-(learn, val_tfms) = initNeuralNetwork()
+(learn, val_tfms, classes) = initNeuralNetwork()
+
+initDirs(classes)
 
 server_socket = getListenningSocket()
 
@@ -87,7 +98,7 @@ try:
         connection = socket.makefile('rb')
         img = readImageFromClient()
         
-        classification = classifyImage(learn, val_tfms, img) 
+        classification = classifyImage(classes, learn, val_tfms, img) 
         print(classification)
        
         conn2=socket.makefile('wb')
