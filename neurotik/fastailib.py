@@ -59,21 +59,7 @@ def classifyAndSaveImage(learn, val_tfms, image):
 
     return classificationIndex
 
-def grabImage (learn, val_tfms, image):
-    ( classificationIndex, predictions ) = classifyImage (learn, val_tfms, image)
-    
-    if -0.1 > predictions[0,classificationIndex]:
-        # uncertain
-        print(predictions)
-        image.save('unknown/%d_%f.jpg' % (classificationIndex, time.time()), "JPEG")
-        classificationIndex = 0
-    else:
-        if classificationIndex > 0:
-            image.save('%d/%d_%f.jpg' % (classificationIndex, classificationIndex, time.time()), "JPEG")
-
-    return classificationIndex
-
-def cropOpencvImage (img):
+def cropOpenCvImage (img):
     width, height = img.shape[:2]
     
     wt = width//3
@@ -81,3 +67,32 @@ def cropOpencvImage (img):
     
     imgCropped = img[wt:wt*2, ht:ht*2]
     return imgCropped
+
+def readOpenCvImageFromClient(): 
+    # Read the length of the image as a 32-bit unsigned int. If the
+    # length is zero, quit the loop
+    image_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
+
+    # Construct a stream to hold the image data and read the image
+    # data from the connection
+    image_stream = io.BytesIO()
+    image_stream.write(connection.read(image_len))
+    # Rewind the stream, open it as an image with PIL and do some
+    # processing on it
+    image_stream.seek(0)
+
+    return Image.open(image_stream)
+
+def getListenningSocket():
+    server_socket = socket.socket()
+    server_socket.bind(('0.0.0.0', 8201))
+    server_socket.listen(0)
+
+    return server_socket
+
+def sendClassification (socket, classification)
+        conn2=socket.makefile('wb')
+        conn2.write(struct.pack('<L', classification))
+        conn2.flush()
+        conn2.close()
+
