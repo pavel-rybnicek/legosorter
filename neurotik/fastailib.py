@@ -96,3 +96,14 @@ def sendClassification (socket, classification)
         conn2.flush()
         conn2.close()
 
+def isImageCentered(learn, val_tfms, img)
+    # vyřízneme střed
+    imgCropped = cropImage(img)
+        
+    # klasifikujeme střed
+    (classificationCropped, predictionsCropped) = classifyImage (learn, val_tfms, imgCropped)
+        
+    if (classificationCropped == 0) and ( -0.1 < predictionsCropped[0,classificationCroppenCropped]):
+        return False
+    return True
+    

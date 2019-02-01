@@ -40,12 +40,6 @@ for root, dirs, files in os.walk(PATH_IMAGES):
         image_name = os.path.join(root, name)
         img = open_image(image_name)
 
-        # vyřízneme střed
-        imgCropped = cropImage(img)
-        
-        # klasifikujeme střed
-        (classificationCropped, predictionsCropped) = classifyImage (learn, val_tfms, imgCropped)
-        
         # uděláme si kopii ořezu pro uložení na disk
         imgg = Image.open(image_name)
         width, height = image.shape[:2]
@@ -55,10 +49,10 @@ for root, dirs, files in os.walk(PATH_IMAGES):
         area = imgg.crop(box)
         
         targetdir = "centrovane"
-        if (classificationCropped == 0) and ( -0.1 < predictionsCropped[0,classificationCroppenCropped]):
+        if isImageCentered (learn, val_tfms, img):
             # nic tam neni a jsme si fakt jistý
             targetdir = "necentrovane"
         
-        copy2(image_name, ("../%s/" % targetdir) )
+        os.remove(image_name, ("../%s/" % targetdir) )
         area.save("../%s_orez/%s" % (targetdir, basename), 'jpeg')
             

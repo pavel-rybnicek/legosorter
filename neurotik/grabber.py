@@ -39,16 +39,15 @@ try:
         socket = server_socket.accept()[0]
         connection = socket.makefile('rb')
         img = readOpenCvImageFromClient()
-        
-        (classification, predictions) = classifyImage(learn, val_tfms, img) 
-        if 0 < classification:
-          # na obrázku něco je, zjistíme, jestli je to uprostřed
-          imgCropped = cropOpenCvImage (img)
-          (classificationCropped, predictionsCropped) = classifyImage (learn, val_tfms, imgCropped)
-          if (0 < classificationCropped) or ( -0.1 > predictions[0,classificationIndex]):
-            # je to uprostřed, anebo si nejsme jistý. Uložíme obrázek.
+       
+        # budeme se zabývat pouze vycentrovanými obrázky
+        if isImageCentered (learn, val_tfms, img) 
+          
+          (classification, predictions) = classifyImage(learn, val_tfms, img) 
+          if 0 < classification:
+            # na obrázku něco je, bere to
             imgCropped.save('grabbed/g_%f.jpg' % (classificationIndex, time.time()), "JPEG")
-  
+    
         # od pusheru se nevyžaduje žádná akce, jenom sbíráme obrázky 
         sendClassification (0)
 
