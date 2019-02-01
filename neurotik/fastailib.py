@@ -59,6 +59,20 @@ def classifyAndSaveImage(learn, val_tfms, image):
 
     return classificationIndex
 
+def grabImage (learn, val_tfms, image):
+    ( classificationIndex, predictions ) = classifyImage (learn, val_tfms, image)
+    
+    if -0.1 > predictions[0,classificationIndex]:
+        # uncertain
+        print(predictions)
+        image.save('unknown/%d_%f.jpg' % (classificationIndex, time.time()), "JPEG")
+        classificationIndex = 0
+    else:
+        if classificationIndex > 0:
+            image.save('%d/%d_%f.jpg' % (classificationIndex, classificationIndex, time.time()), "JPEG")
+
+    return classificationIndex
+
 def cropOpencvImage (img):
     width, height = img.shape[:2]
     
