@@ -1,7 +1,6 @@
-# slouží ke sbírání obrázků
-# uchovává fotky dílů, které jsou přiměřeně uprostřed
-
-# počítá se s tím, že díly jsou stejného typu
+# roztřídí obrázky na centrované a necentrované
+# prochází rekurzivně do podadresářů
+# slouží k vyčištění nasbíraných obrázků
 
 import sys
 sys.path.insert(0, '/home/pryb/fastai')
@@ -26,33 +25,29 @@ import numpy
 
 PATH_TO_MODEL="/home/pryb/data/brick/"
 MODEL='224_brick_last'
-INPUTDIR="../data_pokus/train/"
-OUTPUTDIR="../"
-
-def ulozStredObazku
-    
+WORKDIR="/home/pryb/data_cleanup/"
+INPUTDIR="%ssource/" % WORKDIR
+OUTPUTDIR_OUTCENTERED="%soutcentered/" % WORKDIR
+OUTPUTDIR_OUTCENTERED_CROPPED="%soutcentered_crop/" % WORKDIR
 
 (learn, val_tfms) = initNeuralNetwork(PATH_TO_MODEL, MODEL)
 
-for root, dirs, files in os.walk(PATH_IMAGES):
+for root, dirs, files in os.walk(INPUTDIR):
     for name in files:
         # přečteme obrázek
         image_name = os.path.join(root, name)
-        img = open_image(image_name)
+        img = Image.open(image_name)
+        imgOpenCv = imageToOpenCv(img)
 
         # uděláme si kopii ořezu pro uložení na disk
-        imgg = Image.open(image_name)
-        width, height = image.shape[:2]
-        wt = width//3
-        ht = height//3
-        box = (wt, ht, wt*2, ht*2)
-        area = imgg.crop(box)
-        
-        targetdir = "centrovane"
-        if isImageCentered (learn, val_tfms, img):
+        imgCropped = cropImage (img)
+        print (image_name) 
+        # když není centrovaný, vyřadíme 
+        if not(isImageCentered (learn, val_tfms, imgOpenCv)):
             # nic tam neni a jsme si fakt jistý
-            targetdir = "necentrovane"
-        
-        os.remove(image_name, ("../%s/" % targetdir) )
-        area.save("../%s_orez/%s" % (targetdir, basename), 'jpeg')
+            os.rename(image_name, ("%s%s" % (OUTPUTDIR_OUTCENTERED, name)) )
+            imgCropped.save("%s%s" % (OUTPUTDIR_OUTCENTERED_CROPPED, name), 'jpeg')
+            print ("neberu")
+        else:
+            print ("beru")
             

@@ -38,18 +38,20 @@ try:
         # Accept a single connection and make a file-like object out of it
         socket = server_socket.accept()[0]
         connection = socket.makefile('rb')
-        img = readOpenCvImageFromClient()
-       
+        img = readOpenCvImageFromClient(connection)
+        
+        imgCv = imageToOpenCv (img)
+ 
         # budeme se zabývat pouze vycentrovanými obrázky
-        if isImageCentered (learn, val_tfms, img) 
+        if isImageCentered (learn, val_tfms, imgCv):
           
-          (classification, predictions) = classifyImage(learn, val_tfms, img) 
-          if 0 < classification:
+          (classificationIndex, predictions) = classifyImage(learn, val_tfms, imgCv) 
+          if 0 < classificationIndex:
             # na obrázku něco je, bere to
-            imgCropped.save('grabbed/g_%f.jpg' % (classificationIndex, time.time()), "JPEG")
+            img.save('grabbed/g_%f.jpg' % (time.time()), "JPEG")
     
         # od pusheru se nevyžaduje žádná akce, jenom sbíráme obrázky 
-        sendClassification (0)
+        sendClassification (socket, 0)
 
         connection.close()
 

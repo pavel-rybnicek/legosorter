@@ -29,33 +29,30 @@ def initNeuralNetwork(pathToModel, model):
     trn_tfms, val_tfms = tfms_from_model(resnet34, sz, aug_tfms = transforms_side_on, max_zoom = 1.1)
     return learn, val_tfms
 
-def classifyImage(learn, val_tfms, image):
-    #image.save("out.jpg", "JPEG")
+def classifyImage(learn, val_tfms, img):
     
-    # prevedeme na openCV
-    imageCV = numpy.array(image.convert('RGB'))
-    imageCV = imageCV[:, :, ::-1].copy()
-
-    im= val_tfms(imageCV.astype(np.float32)/255)
+    im= val_tfms(img.astype(np.float32)/255)
 
     # predictions are log scale - 0 would be 100% sure
     predictions = learn.predict_array(im[None])
     
     classificationIndex = np.argmax(np.exp(predictions))
 
+    print(classificationIndex)
+
     return classificationIndex, predictions
 
-def classifyAndSaveImage(learn, val_tfms, image):
-    ( classificationIndex, predictions ) = classifyImage (learn, val_tfms, image)
+def classifyAndSaveImage(learn, val_tfms, img):
+    ( classificationIndex, predictions ) = classifyImage (learn, val_tfms, img)
     
     if -0.1 > predictions[0,classificationIndex]:
         # uncertain
         print(predictions)
-        image.save('unknown/%d_%f.jpg' % (classificationIndex, time.time()), "JPEG")
+        img.save('unknown/%d_%f.jpg' % (classificationIndex, time.time()), "JPEG")
         classificationIndex = 0
     else:
         if classificationIndex > 0:
-            image.save('%d/%d_%f.jpg' % (classificationIndex, classificationIndex, time.time()), "JPEG")
+            img.save('%d/%d_%f.jpg' % (classificationIndex, classificationIndex, time.time()), "JPEG")
 
     return classificationIndex
 
@@ -68,7 +65,15 @@ def cropOpenCvImage (img):
     imgCropped = img[wt:wt*2, ht:ht*2]
     return imgCropped
 
-def readOpenCvImageFromClient(): 
+def cropImage (img):
+    width, height = img.size
+    wt = width//3
+    ht = height//3
+    box = (wt, ht, wt*2, ht*2)
+    area = img.crop(box)
+    return area
+
+def readOpenCvImageFromClient(connection): 
     # Read the length of the image as a 32-bit unsigned int. If the
     # length is zero, quit the loop
     image_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
@@ -81,7 +86,15 @@ def readOpenCvImageFromClient():
     # processing on it
     image_stream.seek(0)
 
-    return Image.open(image_stream)
+    img = Image.open(image_stream)
+    
+    return img
+
+def imageToOpenCv (img):
+    # prevedeme na openCV
+    imageCV = numpy.array(img.convert('RGB'))
+    imageCV = imageCV[:, :, ::-1].copy()
+    return imageCV
 
 def getListenningSocket():
     server_socket = socket.socket()
@@ -90,20 +103,21 @@ def getListenningSocket():
 
     return server_socket
 
-def sendClassification (socket, classification)
+def sendClassification (socket, classification):
         conn2=socket.makefile('wb')
         conn2.write(struct.pack('<L', classification))
         conn2.flush()
         conn2.close()
 
-def isImageCentered(learn, val_tfms, img)
+def isImageCentered(learn, val_tfms, img):
     # vyřízneme střed
-    imgCropped = cropImage(img)
-        
+    imgCropped = cropOpenCvImage(img)
+    #cv2.imwrite('/home/pryb/data_cleanup/01.png', imgCropped)     
+    #cv2.imwrite('/home/pryb/data_cleanup/01a.png', img)     
     # klasifikujeme střed
     (classificationCropped, predictionsCropped) = classifyImage (learn, val_tfms, imgCropped)
         
-    if (classificationCropped == 0) and ( -0.1 < predictionsCropped[0,classificationCroppenCropped]):
+    if (classificationCropped == 0) and ( -0.1 < predictionsCropped[0,classificationCropped]):
         return False
     return True
     
