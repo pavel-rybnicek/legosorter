@@ -24,8 +24,8 @@ import struct
 from PIL import Image
 import numpy
 
-PATH_TO_MODEL="/home/pryb/data/brick/"
-MODEL='224_brick_last'
+PATH_TO_MODEL="/home/pryb/data/color/"
+MODEL='224_color'
 
 
 
@@ -37,8 +37,7 @@ try:
     while True:
         # Accept a single connection and make a file-like object out of it
         socket = server_socket.accept()[0]
-        connection = socket.makefile('rb')
-        img = readOpenCvImageFromClient(connection)
+        img = readImageFromClient(socket)
         
         imgCv = imageToOpenCv (img)
  
@@ -52,8 +51,6 @@ try:
     
         # od pusheru se nevyžaduje žádná akce, jenom sbíráme obrázky 
         sendClassification (socket, 0)
-
-        connection.close()
 
 finally:
     server_socket.close()

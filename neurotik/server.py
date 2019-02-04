@@ -19,10 +19,8 @@ import struct
 from PIL import Image
 import numpy
 
-PATH_TO_MODEL="/home/pryb/data/brick/"
-MODEL='224_brick_last'
-
-
+PATH_TO_MODEL="/home/pryb/data/color/"
+MODEL='224_color'
 
 (learn, val_tfms) = initNeuralNetwork(PATH_TO_MODEL, MODEL)
 
@@ -32,14 +30,11 @@ try:
     while True:
         # Accept a single connection and make a file-like object out of it
         socket = server_socket.accept()[0]
-        connection = socket.makefile('rb')
-        img = readOpenCvImageFromClient()
-        
+        img = readImageFromClient(socket)
+       
         classification = classifyAndSaveImage(learn, val_tfms, img) 
         print(classification)
-        sendClassification (classification)
+        sendClassification (socket, classification)
        
-        connection.close()
-
 finally:
     server_socket.close()

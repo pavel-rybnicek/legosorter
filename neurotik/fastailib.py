@@ -16,6 +16,25 @@ import socket
 import struct
 from PIL import Image
 import numpy
+import shutil
+
+
+dataclasses = "" # plní se při inicializaci neuronsítě
+
+OUTDIR = "../outdir"
+def prepareOutDirs ():
+    if os.path.exists(OUTDIR):
+        shutil.rmtree (OUTDIR)
+    os.makedirs(OUTDIR)
+   
+    unknown = "%s/%s" % (OUTDIR, "unknown") 
+    if not os.path.exists(unknown):
+        os.makedirs(unknown)
+
+    for subdir in dataclasses:
+        directory = "%s/%s" % (OUTDIR, subdir)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
 def initNeuralNetwork(pathToModel, model):
     PATH = "/home/pryb/data/brick/"
@@ -27,6 +46,12 @@ def initNeuralNetwork(pathToModel, model):
     learn.load(model)
     print('start')
     trn_tfms, val_tfms = tfms_from_model(resnet34, sz, aug_tfms = transforms_side_on, max_zoom = 1.1)
+
+    # FIXME tohle patří jenom do vyhodnocovacího serveru
+    global dataclasses
+    dataclasses = data.classes
+    prepareOutDirs ()
+
     return learn, val_tfms
 
 def classifyImage(learn, val_tfms, img):
@@ -43,16 +68,18 @@ def classifyImage(learn, val_tfms, img):
     return classificationIndex, predictions
 
 def classifyAndSaveImage(learn, val_tfms, img):
-    ( classificationIndex, predictions ) = classifyImage (learn, val_tfms, img)
+    imgCv = imageToOpenCv (img)
+ 
+    ( classificationIndex, predictions ) = classifyImage (learn, val_tfms, imgCv)
     
     if -0.1 > predictions[0,classificationIndex]:
         # uncertain
         print(predictions)
-        img.save('unknown/%d_%f.jpg' % (classificationIndex, time.time()), "JPEG")
+        img.save('%s/unknown/%d_%f.jpg' % (OUTDIR, classificationIndex, time.time()), "JPEG")
         classificationIndex = 0
     else:
         if classificationIndex > 0:
-            img.save('%d/%d_%f.jpg' % (classificationIndex, classificationIndex, time.time()), "JPEG")
+            img.save('%s/%s/%d_%f.jpg' % (OUTDIR, dataclasses[classificationIndex], classificationIndex, time.time()), "JPEG")
 
     return classificationIndex
 
@@ -73,7 +100,9 @@ def cropImage (img):
     area = img.crop(box)
     return area
 
-def readOpenCvImageFromClient(connection): 
+def readImageFromClient(socket): 
+    connection = socket.makefile('rb')
+
     # Read the length of the image as a 32-bit unsigned int. If the
     # length is zero, quit the loop
     image_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
@@ -87,13 +116,15 @@ def readOpenCvImageFromClient(connection):
     image_stream.seek(0)
 
     img = Image.open(image_stream)
-    
+
+    connection.close ()
+ 
     return img
 
 def imageToOpenCv (img):
     # prevedeme na openCV
     imageCV = numpy.array(img.convert('RGB'))
-    imageCV = imageCV[:, :, ::-1].copy()
+    #imageCV = imageCV[:, :, ::-1].copy()
     return imageCV
 
 def getListenningSocket():
