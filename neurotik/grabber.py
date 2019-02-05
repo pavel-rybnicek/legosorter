@@ -51,6 +51,7 @@ try:
     
         # od pusheru se nevyžaduje žádná akce, jenom sbíráme obrázky 
         sendClassification (socket, 0)
+        socket.close ()
 
 finally:
     server_socket.close()

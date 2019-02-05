@@ -18,9 +18,18 @@ import socket
 import struct
 from PIL import Image
 import numpy
+import _thread
 
 PATH_TO_MODEL="/home/pryb/data/color/"
 MODEL='224_color'
+
+def processRequest (socket):
+    img = readImageFromClient(socket)
+       
+    classification = classifyAndSaveImage(learn, val_tfms, img) 
+    print(classification)
+    sendClassification (socket, classification)
+    socket.close()
 
 (learn, val_tfms) = initNeuralNetwork(PATH_TO_MODEL, MODEL)
 
@@ -30,11 +39,8 @@ try:
     while True:
         # Accept a single connection and make a file-like object out of it
         socket = server_socket.accept()[0]
-        img = readImageFromClient(socket)
-       
-        classification = classifyAndSaveImage(learn, val_tfms, img) 
-        print(classification)
-        sendClassification (socket, classification)
+
+        _thread.start_new_thread(processRequest, (socket, ))
        
 finally:
     server_socket.close()
